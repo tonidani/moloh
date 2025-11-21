@@ -1,0 +1,12 @@
+./volume
+*.pyc
+**/__pycache__
+Dockerfile*
+docker-compose*
+.dockerignore
+.git
+.gitignore
+.vscode
+__pycache__
+frontend/dist
+frontend/node_modules

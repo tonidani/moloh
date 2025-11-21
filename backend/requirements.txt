@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlite-vss
+httpx
+orjson
+aiosqlite
+arq
+numpy
+locust
+Faker
+langdetect
+pyjwt

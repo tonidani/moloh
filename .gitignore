@@ -1,0 +1,32 @@
+# These are some examples of commonly ignored file patterns.
+# You should customize this list as applicable to your project.
+# Learn more about .gitignore:
+#     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
+
+#python
+__pycache__/
+*.py[cod]
+*.log
+
+node_modules/
+dist/
+
+
+frontend/dist
+frontend/node_modules
+
+.venv
+.data
+/volume/*
+!/volume/.gitkeep
+
+.pytest_cache
+.coverage
+
+main.sqlite
+projects.sqlite
+
+.env.local
+.env.*.local
+.env
+.webui_data

@@ -1,0 +1,108 @@
+services:
+  honeypot:
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    container_name: honeypot-api
+    depends_on:
+      - ollama
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5555:5000"
+     # - "8089:8089" # locust
+    environment:
+      - OLLAMA_BASE_URLS=http://honeypot-ollama:11434
+    volumes:
+      - "./backend:/workspace/backend"
+      - "./volume:/volume"
+    restart: unless-stopped
+    networks:
+      - ollama_network
+    #command: ["tail", "-f" , "/dev/null"]
+    entrypoint: ["/workspace/backend/run.sh"]
+
+
+
+  ollama:
+    build:
+      context: .
+      dockerfile: ./docker/ollama/Dockerfile
+    container_name: honeypot-ollama
+    # ports:
+    #   - "127.0.0.1:11434:11434"
+    volumes:
+      - .data:/root/.ollama
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility      
+      - DOWNLOAD_MODEL=${DOWNLOAD_MODEL}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s 
+    entrypoint: ["/tmp/start.sh"]
+    networks:
+      - ollama_network
+  
+  # open-webui:
+  #   image: ghcr.io/open-webui/open-webui:main
+  #   container_name: honeypot-open-webui
+  #   depends_on:
+  #     - ollama
+  #   ports:
+  #     - "${EXTERNAL_WEBGUI_PORT}:8080"  # WebUI dostępne na http://localhost:3000
+  #   environment:
+  #     - OLLAMA_BASE_URLS=http://honeypot-ollama:11434
+  #     - EXTERNAL_WEBGUI_PORT=${EXTERNAL_WEBGUI_PORT}
+  #   volumes:
+  #     - .webui_data:/app/backend/data
+  #   restart: unless-stopped
+  #   networks:
+  #     - ollama_network
+  
+  # worker:
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/api/Dockerfile
+  #   container_name: honeypot-worker
+  #   command: arq worker.WorkerSettings
+  #   depends_on:
+  #     - redis
+  #   volumes:
+  #     - ./app/db:/app/db
+  #     - ./app/worker.py:/app/worker.py
+  #   environment:
+  #     - REDIS_HOST=honeypot-redis
+  #   networks:
+  #     - ollama_network
+
+  redis:
+    image: redis:7
+    container_name: honeypot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./app/db:/app/db
+    networks:
+      - ollama_network
+
+volumes:
+  ollama_data:
+  webui_data:
+
+networks:
+  ollama_network:
+    driver: bridge

@@ -1,0 +1,12 @@
+METHOD: {{method}}
+HEADERS: {{headers}}
+PATH: {{path}}
+BODY: {{body}}
+QUERY_PARAMS: {{query_params}}
+{{attack_section}}
+{{dynamic_fields_section}}
+{{emulated_files_section}}
+Produce a long, realistic, slightly inconsistent JSON response that fits the endpoint.
+If an attack is detected, behave like a vulnerable or partially protected system
+(e.g., partial leaks, error logs, directory listings, DB engine errors), 
+but NEVER output real secrets.

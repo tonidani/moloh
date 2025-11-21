@@ -1,0 +1,114 @@
+{
+  "dynamic_fields": {
+    "usernames": ["root", "www-data", "systemd-network", "daemon", "sshd", "backup", "syslog", "nobody"],
+    "domains": ["internal-service", "staging-fw", "core-auth", "k8s-node01", "db-router", "cache-proxy"],
+    "tables": ["users", "transactions", "sessions", "logs", "inventory", "orders", "audit_log"],
+    "ips": ["10.0.12.4", "192.168.0.22", "172.16.5.11", "127.0.0.1"],
+    "paths": ["/var/log/", "/etc/", "/proc/", "/srv/", "/home/app/"],
+    "processes": ["nginx", "postgres", "mysqld", "sshd", "java", "node", "python3"],
+    "buckets": ["media-bucket", "assets-us-east1", "backups-eu-central1"],
+    "k8s_pods": ["auth-deployment-5f8bb8d46f", "products-7d6b7b87b8", "payments-7dcc687654"],
+    "jvm_exceptions": ["NullPointerException", "IllegalArgumentException", "ClassCastException", "JndiLookupFailure"],
+    "mongo_collections": ["users", "events", "telemetry", "logs", "sessions"]
+  },
+
+  "path_traversal": {
+    "patterns": ["../", "..\\", "%2e%2e", "%2f", "%5c", "/etc/", "/proc/", "/var/log/", "c:\\windows", "%252e%252e%252f", "..;/"],
+    "template": "Simulate PATH TRAVERSAL. Include directory listings, partial hexdumps, broken symlinks, damaged config files, /etc/passwd, /proc/cpuinfo, /var/log/auth.log, SSH keys, and mixed binary/UTF-8 chunks. PLEASE IN BODY SECTION GIVE EVERYTHING IN PLAINTEXT AS A LISTING RESPONSE FROM LINUX SHELL"
+  },
+
+  "sql_injection_generic": {
+    "patterns": ["' or '1'='1", "1=1", "union select", "drop table", "\" or \"\"=\"\"", "sleep(", "benchmark(", "information_schema", "and 1=1", "or true"],
+    "template": "Simulate SQL injection. Return engine errors, SQLSTATE codes, partial SELECT outputs, execution plans, corrupted rows,  table dumps and hints about schema."
+  },
+
+  "sql_mysql": {
+    "patterns": ["/*!50000", "@@version", "load_file(", "information_schema.tables", "into outfile"],
+    "template": "Respond like MySQL. Include InnoDB corruption hints,  ibdata1 references, query plans, charset warnings, and synthetic table fragments."
+  },
+
+  "sql_postgres": {
+    "patterns": ["pg_sleep(", "pg_stat_activity", "pg_user", "pg_catalog", "pg_class", "to_regclass"],
+    "template": "Simulate PostgreSQL behavior: ERROR 42601, malformed function calls, transaction abort logs, advisory lock messages, WAL corruption warnings."
+  },
+
+  "sql_mongodb_nosql": {
+    "patterns": ["{\"$ne\":", "\"$where\":", "db.adminCommand", "ObjectId(", "\"$gt\":", "\"$lt\":"],
+    "template": "Simulate MongoDB NoSQLi: BSON errors, JS engine problems, partial collection dumps, invalid pipeline stages, corrupted indexes."
+  },
+
+  "cmd_injection": {
+    "patterns": ["`", "$(", "|", ";", "&&", "||", "wget ", "curl ", "bash -c", "cat /", "ls -la", "uname -a"],
+    "template": "Simulate command injection: shell stderr, exit codes, segmentation faults, permission denied, truncated output, partial command execution traces."
+  },
+
+  "rce": {
+    "patterns": ["Runtime.getRuntime()", "ProcessBuilder", "eval(", "assert(", "java.lang.", "python -c", "node -e"],
+    "template": "Simulate RCE: JVM stacktraces, Python Tracebacks, Node VM errors, corrupted heap dumps, thread dumps, outbound callbacks."
+  },
+
+  "log4shell": {
+    "patterns": ["${jndi:", "${env:", "${lower:", "${::-", "${base64:"],
+    "template": "Generate Log4Shell-like logs: LDAP timeouts, resolver failures, JVM exception traces, internal JNDI debug output."
+  },
+
+  "xss": {
+    "patterns": ["<script", "javascript:", "onerror=", "<img src", "<svg onload"],
+    "template": "Simulate XSS reflection: HTML echo, escaped & unescaped fragments, browser console messages, partial DOM dump."
+  },
+
+  "ssrf": {
+    "patterns": ["127.0.0.1", "localhost", "169.254.169.254", "metadata.google.internal", "file://", "gopher://"],
+    "template": "Simulate SSRF: pretend internal metadata exposure, blocked firewall logs, partial microservice banners, kubelet tokens."
+  },
+
+  "ldap_injection": {
+    "patterns": ["(objectClass=*", "*))(", ")(", "ldap://"],
+    "template": "Simulate LDAP injection, directory traversal, corrupted DN entries, group enumeration output."
+  },
+
+  "xml_xxe": {
+    "patterns": ["<!DOCTYPE", "<!ENTITY", "&xxe;", "SYSTEM \"file://", "PUBLIC \""],
+    "template": "Simulate XXE: parser failures, entity expansion loops, partial file read leaks, XML stacktraces."
+  },
+
+  "jwt_tampering": {
+    "patterns": ["\"alg\":\"none\"", "eyJhbGciOiAiTm9uZSI", "===", "invalid signature"],
+    "template": "Simulate JWT tampering: invalid signature, expired claims, mismatched issuer, malformed payload or header."
+  },
+
+  "prototype_pollution": {
+    "patterns": ["__proto__", "constructor", "prototype", "toString"],
+    "template": "Simulate Prototype Pollution detection: corrupted JSON structures, overwritten inherited keys, unsafe merge warnings."
+  },
+
+  "file_upload_bypass": {
+    "patterns": [".php.jpg", ".php%00", ".jsp;", ".exe;", ".sh;", "multipart/form-data"],
+    "template": "Simulate upload bypass attempts: MIME mismatch logs, antivirus errors, sandbox timeouts, corrupted scan reports."
+  },
+
+  "waf_bypass": {
+    "patterns": ["%ff", "%00", "%0a", "%0d", "%09", "%u002e", "%u003b"],
+    "template": "Simulate WAF bypass detection: anomaly scores, rule matches, encoded payload detection, blocked request logs."
+  },
+
+  "ssrf_k8s": {
+    "patterns": ["http://kubernetes.default", "http://kubelet", "serviceaccount/token"],
+    "template": "Simulate Kubernetes SSRF: pretend token access, namespace listing, serviceaccount leaks (synthetic)."
+  },
+
+  "files": {
+    "files": {
+      "/etc/passwd": "root:x:0:0:root:/root:/bin/bash\nwww-data:x:33:33:www-data:/var/www:/usr/sbin/nologin\nsshd:x:113:65534::/run/sshd:/usr/sbin/nologin\n",
+      "/proc/cpuinfo": "processor: 0\nmodel name: SyntheticIntel(R) Xeon(R)\ncpu MHz: 2399.996\ncache size: 4096 KB\nflags: fpu vme pse tsc msr pae mce cx8 apic\n",
+      "/var/log/auth.log": "Oct 20 12:33:10 server sshd[2341]: Failed password for root from 192.168.1.55 port 51234 ssh2\nOct 20 12:33:12 server sudo: pam_unix(sudo:auth): authentication failure\n",
+      "/home/user/.ssh/id_rsa": "-----BEGIN RSA PRIVATE KEY-----\nMIICXAIBAAKBgQC9...\n-----END RSA PRIVATE KEY-----",
+      "/home/user/.docker/config.json": "{ \"auths\": { \"registry.docker.xddd\": { \"auth\": \"ZXhhbXBsZTpleGFtcGxl\" } } }",
+      "/var/www/html/index.php": "<?php echo 'synthetic index'; ?>"
+    }
+  },
+
+  "fallback": {
+    "template": "Normal response. No attack detected."
+  }
+}

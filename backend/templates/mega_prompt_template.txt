@@ -1,0 +1,9 @@
+METHOD: {{method}}
+HEADERS: {{headers}}
+PATH: {{path}}
+BODY: {{body}}
+QUERY_PARAMS: {{query_params}}
+{{attack_section}}
+{{dynamic_fields_section}}
+{{emulated_files_section}}
+Generate output according to the system rules.
