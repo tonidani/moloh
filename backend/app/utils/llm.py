@@ -4,7 +4,7 @@ import orjson
 
 from app.models.llm import LLMResponse
 from app.utils.attack_detector import detect_attack
-from app.variables import OLLAMA_URL, MODEL, SYSTEM_PROMPT, AUGMENT_TEMPLATE, OPEN_API_KEY
+from app.variables import OLLAMA_URL, MODEL, OPEN_API_MODEL, SYSTEM_PROMPT, AUGMENT_TEMPLATE, OPEN_API_KEY
 
 
 async def call_llm(headers: dict, method: str, path: str, body: dict | None, query_params: dict | None) -> LLMResponse:  # type: ignore
@@ -62,7 +62,7 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
     if OPEN_API_KEY:
         url = "https://api.openai.com/v1/chat/completions"
         payload = {
-            "model": "gpt-4o-mini",      # pewny, dostępny model
+            "model": OPEN_API_MODEL,      # pewny, dostępny model
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt}

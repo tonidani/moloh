@@ -38,6 +38,7 @@ PRAGMAS = [
 
 
 MODEL = os.getenv("MODEL", "llama3.1:8b")
+OPEN_API_MODEL = os.getenv("OPEN_API_MODEL", "gpt-5-nano")
 
 PROMPT_DIR = Path("templates")
 
