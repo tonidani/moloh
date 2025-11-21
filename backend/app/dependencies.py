@@ -54,6 +54,13 @@ async def token_required(request: Request) -> Dict[str, Any]:
     return payload
 
 
+def get_real_ip(request: Request):
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host
+
+
 async def validate_request(full_path: str, request: Request) -> RequestValidator:
 
     body = None
@@ -61,7 +68,7 @@ async def validate_request(full_path: str, request: Request) -> RequestValidator
         body = await extract_body_any(request)
 
     return RequestValidator(
-        client_ip=str(request.client.host),  # type: ignore
+        client_ip=str(get_real_ip(request)),  # type: ignore
         full_path=full_path,
         method=request.method,
         query_params=dict(request.query_params),

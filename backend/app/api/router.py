@@ -1,7 +1,7 @@
 from typing import Any
 from fastapi import APIRouter, Depends, Request
 from app.services.resources import ResourceService
-from app.dependencies import get_db, get_redis, token_required, validate_request
+from app.dependencies import get_db, get_redis, token_required, validate_request, get_real_ip
 from app.models.login import LoginRequest
 from app.services.login import LoginService
 from app.models.requests import RequestValidator
@@ -16,7 +16,8 @@ async def login(
     db: Any = Depends(get_db),
     redis: Any = Depends(get_redis)
 ):
-    return await LoginService(db, redis).login(data, str(request.client.host))  # type: ignore
+
+    return await LoginService(db, redis).login(data, get_real_ip(request.client.host))  # type: ignore
 
 
 @router.get("/{full_path:path}")
