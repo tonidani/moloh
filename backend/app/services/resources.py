@@ -126,13 +126,11 @@ class ResourceService:
         # 1) canonical
         res = await self.find_canonical(canonical_key)
         if res:
-            print(res)
             return res
 
         # 2) vector search
         res = await self.find_vector(embedding)
         if res:
-            print(res)
             return res
 
         return None
@@ -223,13 +221,13 @@ class ResourceService:
     async def rate_limit_new_get(self, client_ip: str, limit: int = 10, window: int = 900):
         key = f"rate:newget:{client_ip}"
 
-        # count = await self.redis.incr(key)
-        # if count == 1:
-        #     await self.redis.expire(key, window)
+        count = await self.redis.incr(key)
+        if count == 1:
+            await self.redis.expire(key, window)
 
-        # if count > limit:
-        #     ttl = await self.redis.ttl(key)
-        #     return True, ttl
+        if count > limit:
+            ttl = await self.redis.ttl(key)
+            return True, ttl
 
         return False, None
 
