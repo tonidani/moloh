@@ -75,7 +75,7 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
             "Content-Type": "application/json",
         }
 
-    async with httpx.AsyncClient(timeout=90) as client:
+    async with httpx.AsyncClient(timeout=180) as client:
         r = await client.post(url, json=payload, headers=headers)
         r.raise_for_status()
         resp_json = r.json()
