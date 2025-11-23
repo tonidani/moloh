@@ -38,10 +38,13 @@ class ResourceService:
         return self.respond(interaction.response_body, 204, interaction.response_headers)
 
     async def _handle_get(self, req: RequestValidator):
-        embedding = await embed_text(req.semantic_key)
-        canonical = req.canonicalize(req.method)
+        res = await self.find_resource(req.full_path)
+        embedding = None
+        if not res:
+            embedding = await embed_text(req.semantic_key)
+            canonical = req.canonicalize(req.method)
+            res = await self.find_resource(req.full_path, canonical, embedding)
 
-        res = await self.find_resource(canonical, embedding, req.full_path)
         if res:
             interaction = InteractionCreate(
                 request=req,
@@ -85,9 +88,13 @@ class ResourceService:
         return self.respond(llm_resp.body, llm_resp.status_code, llm_resp.headers)
 
     async def _handle_crud(self, req: RequestValidator, token: Dict[str, Any] | None):
-        embedding = await embed_text(req.semantic_key)
-        canonical = req.canonicalize(req.method)
-        existing = await self.find_resource(canonical, embedding, req.full_path)
+        existing = await self.find_resource(req.full_path)
+        embedding = None
+        canonical = None
+        if not existing:
+            embedding = await embed_text(req.semantic_key)
+            canonical = req.canonicalize(req.method)
+            existing = await self.find_resource(req.full_path, canonical, embedding)
 
         if not existing:
             return await self._handle_get(req)
@@ -132,20 +139,22 @@ class ResourceService:
 
         return self.respond(response_body, response_status, response_headers)
 
-    async def find_resource(self, canonical_key: str, embedding: List[float], path: str):
+    async def find_resource(self, path: str, canonical_key: str | None = None, embedding: List[float] | str | None = None):
         res = await self.find_by_path(path)
         if res:
             return res
 
         # 1) canonical
-        res = await self.find_canonical(canonical_key)
-        if res:
-            return res
+        if canonical_key:
+            res = await self.find_canonical(canonical_key)
+            if res:
+                return res
 
         # 2) vector search
-        res = await self.find_vector(embedding)
-        if res:
-            return res
+        if embedding:
+            res = await self.find_vector(embedding)
+            if res:
+                return res
 
         return None
 
