@@ -41,9 +41,6 @@ class RequestValidator(BaseModel):
 
         segments = [s for s in v.split("/") if s]
 
-        if len(segments) > 5:
-            raise HTTPException(status_code=204)
-
         for seg in segments:
 
             if API_VERSION_RE.fullmatch(seg):
