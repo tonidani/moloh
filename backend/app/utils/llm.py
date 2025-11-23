@@ -19,7 +19,7 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
     dynamic_fields_section = ""
     emulated_files_section = ""
 
-    if attack_type != "fallback":
+    if attack_type:
         attack_section = f"""
             ATTACK_TYPE: {attack_type}
             ATTACK_BEHAVIOR:
@@ -58,8 +58,10 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
         ],
         "stream": False
     }
-
+    print(SYSTEM_PROMPT)
+    print(prompt)
     if OPEN_API_KEY:
+        print("open api")
         url = "https://api.openai.com/v1/chat/completions"
         payload = {
             "model": OPEN_API_MODEL,      # pewny, dostępny model

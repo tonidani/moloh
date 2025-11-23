@@ -1,7 +1,7 @@
 from typing import Any, Dict
 import jwt
 
-from fastapi import HTTPException, Request
+from fastapi import Request
 from app.variables import SECRET
 from app.models.requests import RequestValidator
 from app.utils.requests_utils import extract_body_any
