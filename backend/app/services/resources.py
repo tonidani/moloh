@@ -257,8 +257,10 @@ class ResourceService:
                 key_lower = k.lower()
                 if key_lower in forbidden or key_lower == "content-type":
                     continue
-
-            clean[k] = str(v)
+            try:
+                clean[k] = str(v)
+            except:
+                pass
 
         # JSON dict
         if isinstance(body, dict):
