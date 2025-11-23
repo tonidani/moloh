@@ -1,4 +1,5 @@
-from typing import Any, List
+from typing import Any, Dict, List
+from fastapi import HTTPException
 import numpy as np
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 
@@ -22,13 +23,23 @@ class ResourceService:
         async with redis_lock(self.redis, req.hash):
             return await self._handle_get(req)
 
-    async def crud(self, req: RequestValidator) -> Response:
+    async def crud(self, req: RequestValidator, token: Dict[str, Any] | None) -> Response:
         async with redis_lock(self.redis, req.hash):
-            return await self._handle_crud(req)
+            return await self._handle_crud(req, token)
+
+    async def delete(self, req: RequestValidator) -> Response:
+        interaction = InteractionCreate(
+            request=req,
+            response_body=None,
+            response_status=204,
+            response_headers=DEFAULT_HEADERS
+        )
+        await self.interaction_service.save(interaction)
+        return self.respond(interaction.response_body, 204, interaction.response_headers)
 
     async def _handle_get(self, req: RequestValidator):
         embedding = await embed_text(req.semantic_key)
-        canonical = req.canonicalize("GET")
+        canonical = req.canonicalize(req.method)
 
         res = await self.find_resource(canonical, embedding, req.full_path)
         if res:
@@ -50,7 +61,7 @@ class ResourceService:
 
         # no match → call LLM
         llm_resp = await call_llm(
-            req.headers, "GET", req.full_path, None, req.query_params
+            req.headers, req.method, req.full_path, req.body, req.query_params
         )
 
         new_resource = ResourceCreate(
@@ -73,50 +84,53 @@ class ResourceService:
         await self.interaction_service.save(interaction)
         return self.respond(llm_resp.body, llm_resp.status_code, llm_resp.headers)
 
-    async def _handle_crud(self, req: RequestValidator):
-        canonical = req.canonicalize("GET")
-        existing = await self.find_canonical(canonical)
+    async def _handle_crud(self, req: RequestValidator, token: Dict[str, Any] | None):
+        embedding = await embed_text(req.semantic_key)
+        canonical = req.canonicalize(req.method)
+        existing = await self.find_resource(canonical, embedding, req.full_path)
 
         if not existing:
-            resource = ResourceCreate(
-                path=req.full_path,
-                canonical_key=canonical,
-                response_body=req.body,
-                response_status=200,
-                embedding=await embed_text(req.semantic_key),
-            )
-            await self.create(resource)
-
-            interaction = InteractionCreate(
-                request=req,
-                response_body=req.body,
-                response_status=200,
-            )
-            await self.interaction_service.save(interaction)
-
-            return self.respond(interaction.response_body, 200)
+            return await self._handle_get(req)
 
         saved_body = existing.response_body
-        if saved_body and isinstance(saved_body, dict):
+
+        response_body = saved_body
+        response_status = existing.response_status
+        response_headers = existing.response_headers
+
+        if isinstance(saved_body, dict):
+            if token is None:
+                response_body = {"detail": "Invalid token"}
+                response_status = 401
+
+                interaction = InteractionCreate(
+                    request=req,
+                    response_body=response_body,
+                    response_status=response_status,
+                    response_headers=response_headers,
+                )
+                await self.interaction_service.save(interaction)
+                raise HTTPException(status_code=401, detail="Invalid token")
+
             # JUST CAN JSON CHANGE, NOT HTML OR OTHERS
             for k in req.body.keys():
                 if k not in saved_body and k not in ("id", "_id"):
                     return JSONResponse({"error": f"Unknown field: {k}"}, 400)
 
             new_body = saved_body | req.body
+            response_body = new_body
+            response_status = 200
             await self.update(existing.id, new_body)
-
-        new_body = req.body
 
         interaction = InteractionCreate(
             request=req,
-            response_body=new_body,
-            response_status=200,
-            response_headers=existing.response_headers
+            response_body=response_body,
+            response_status=response_status,
+            response_headers=response_headers,
         )
         await self.interaction_service.save(interaction)
 
-        return self.respond(new_body, 200, existing.response_headers)
+        return self.respond(response_body, response_status, response_headers)
 
     async def find_resource(self, canonical_key: str, embedding: List[float], path: str):
         res = await self.find_by_path(path)

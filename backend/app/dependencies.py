@@ -38,18 +38,16 @@ async def extract_token(request: Request) -> str | None:
     return None
 
 
-async def token_required(request: Request) -> Dict[str, Any]:
+async def token_required(request: Request) -> Dict[str, Any] | None:
     token = await extract_token(request)
 
     if not token:
-        raise HTTPException(status_code=401, detail="Missing token")
+        return None
 
     try:
         payload = jwt.decode(token, SECRET, algorithms=["HS512"])  # type:ignore
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token expired")
-    except jwt.InvalidTokenError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except:
+        return None
 
     return payload
 

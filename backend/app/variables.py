@@ -1,14 +1,13 @@
-from datetime import datetime
 import os
+
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict
-
-import orjson
 
 
 SECRET = os.getenv("SECRET")
 
-DB_PATH = Path(f"/volume/{datetime.now().strftime("%Y-%m-%d")}.db")
+DB_PATH = os.getenv("DB_NAME", Path(f"/volume/{datetime.now().strftime("%Y-%m-%d")}.db"))
 REDIS_HOST = os.getenv("REDIS_HOST", "honeypot-redis")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 OLLAMA_URL = os.getenv("OLLAMA_BASE_URLS", "http://localhost:11434")
