@@ -3,7 +3,7 @@ import uuid
 
 from datetime import datetime
 from typing import Any, Dict
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 
 DEFAULT_HEADERS = {
     "Server": "nginx/1.22.1",
@@ -17,7 +17,7 @@ DEFAULT_HEADERS = {
 
 
 class LLMResponse(BaseModel):
-    body: Dict[str, Any] | str = Field(default_factory=dict)
+    body: Dict[str, Any] | str = {}
     status_code: int = 200
     headers: Dict[str, Any] = DEFAULT_HEADERS
 
@@ -69,10 +69,14 @@ class LLMResponse(BaseModel):
             parsed["body"] = inner
 
         headers_val = parsed.get("headers")
+        forbidden = {"content-length", "transfer-encoding", "date"}
 
         clean_headers = {}
         for k, v in headers_val.items():
             if isinstance(v, str):
+                key_lower = k.lower()
+                if key_lower in forbidden or key_lower == "content-type":
+                    continue
                 clean_headers[k] = v.strip()
             else:
                 clean_headers[k] = v

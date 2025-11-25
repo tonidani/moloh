@@ -184,10 +184,9 @@ class ResourceService:
 
         return ResourceDB.from_row(resource)
 
-    async def find_vector(self, embedding: List[float], threshold: float = 0.8) -> ResourceDB | None:
+    async def find_vector(self, embedding: List[float], threshold: float = 0.4) -> ResourceDB | None:
         vec_blob = np.asarray(embedding, dtype=np.float32).tobytes()
 
-        # 1) jeśli nie ma żadnych embeddingów — nie szukaj
         async with self.db.execute("SELECT COUNT(*) FROM embeddings") as cur:
             (count,) = await cur.fetchone()
             if count == 0:
@@ -212,7 +211,7 @@ class ResourceService:
 
         rid, body_raw, status, distance, headers = row
 
-        similarity = 1 - float(distance)
+        similarity = float(np.exp(-distance / 100))
         if similarity < threshold:
             return None
 

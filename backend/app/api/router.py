@@ -16,7 +16,7 @@ async def login(
     db: Any = Depends(get_db),
     redis: Any = Depends(get_redis)
 ):
-    return await LoginService(db, redis).login(data, get_real_ip(request.client.host))  # type: ignore
+    return await LoginService(db, redis).login(data, get_real_ip(request))  # type: ignore
 
 
 @router.get("/{full_path:path}")

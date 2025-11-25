@@ -58,8 +58,6 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
         ],
         "stream": False
     }
-    print(SYSTEM_PROMPT)
-    print(prompt)
     if OPEN_API_KEY:
         print("open api")
         url = "https://api.openai.com/v1/chat/completions"
@@ -88,9 +86,28 @@ async def call_llm(headers: dict, method: str, path: str, body: dict | None, que
 
 
 async def embed_text(text: str) -> List[float]:
-    async with httpx.AsyncClient(timeout=90) as client:
+    async with httpx.AsyncClient(timeout=30) as client:
         r = await client.post(
             f"{OLLAMA_URL}/api/embeddings",
             json={"model": "nomic-embed-text", "prompt": text},
         )
         return r.json()["embedding"]
+
+
+async def call_ollama(prompt: str) -> str:
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        resp = await client.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt},
+                ],
+                "stream": False,
+            },
+        )
+        resp.raise_for_status()
+        resp_json = resp.json()
+        data = resp_json["message"]["content"]
+        return data
