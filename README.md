@@ -1,7 +1,6 @@
-# Moloh
+# MolohLLM
 
 <img src="moloh.png" alt="Moloh Logo" width="300"/>
-# MolohLLM
 
 **A semantic-cache-augmented HTTP honeypot with locally-hosted LLM response generation.**
 
